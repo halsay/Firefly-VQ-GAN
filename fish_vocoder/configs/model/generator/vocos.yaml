@@ -1,0 +1,15 @@
+_target_: fish_vocoder.modules.generators.unify.UnifyGenerator
+backbone:
+  _target_: fish_vocoder.modules.encoders.convnext.ConvNeXtEncoder
+  input_channels: ${model.num_mels}
+  depths: [3, 3, 27, 3]
+  dims: [128, 256, 512, 1024]
+  drop_path_rate: 0.4
+  kernel_size: 7
+head:
+  _target_: fish_vocoder.modules.generators.vocos.ISTFTHead
+  dim: 1024
+  n_fft: ${model.n_fft}
+  hop_length: ${model.hop_length}
+  win_length: ${model.win_length}
+  padding: same

@@ -1,0 +1,46 @@
+defaults:
+  - dataset@datasets.train.datasets.hifi-8000h.dataset: vocoder-train
+  - dataset@datasets.train.datasets.vocoder-data-441.dataset: vocoder-train
+  - dataset@datasets.train.datasets.libritts-train.dataset: vocoder-train
+  - _self_
+
+_target_: fish_vocoder.data.datamodules.naive.NaiveDataModule
+
+batch_size: 16
+val_batch_size: 2
+num_workers: 8
+
+collate_fn:
+  _target_: fish_vocoder.data.datasets.vocoder.collate_fn
+  _partial_: true
+
+datasets:
+  train:
+    _target_: fish_vocoder.data.datasets.mix.MixDatast
+    datasets:
+      hifi-8000h:
+        dataset:
+          root: filelist.hifi-8000h.train
+        prob: 0.8
+      vocoder-data-441:
+        dataset:
+          root: filelist.vocoder_data_441.train
+        prob: 0.1
+      libritts-train:
+        dataset:
+          root: filelist.libritts.train
+        prob: 0.1
+
+  val:
+    _target_: fish_vocoder.data.datasets.vocoder.VocoderDataset
+    root: dataset/valid
+    transform:
+      _target_: torch.nn.Sequential
+      _args_:
+        - _target_: fish_vocoder.data.transforms.load.LoadAudio
+          sampling_rate: ${model.sampling_rate}
+        - _target_: fish_vocoder.data.transforms.crop.RandomCrop
+          probability: 1
+          crop_length: "${eval: '${model.hop_length} * 1000'}"
+        - _target_: fish_vocoder.data.transforms.pad.Pad
+          multiple_of: ${model.hop_length}

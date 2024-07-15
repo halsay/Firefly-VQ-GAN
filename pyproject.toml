@@ -1,0 +1,73 @@
+[project]
+name = "fish-vocoder"
+version = "1.0.0"
+description = ""
+license = {text = "MIT"}
+authors = [
+    {name = "Lengyue", email = "lengyue@lengyue.me"},
+]
+requires-python = ">=3.10,<4.0"
+dependencies = [
+    "librosa<1.0.0,>=0.9.1",
+    "numba<1.0.0,>=0.56.4",
+    "wandb>=0.15.4",
+    "loguru>=0.7.0",
+    "tensorboard<3.0.0,>=2.11.2",
+    "natsort<9.0.0,>=8.3.1",
+    "torch<3.0.0,>=2.0.0",
+    "torchaudio<3.0.0,>=2.0.0",
+    "lightning>=2.0.3",
+    "hydra-core>=1.3.2",
+    "pyrootutils>=1.0.4",
+    "hydra-colorlog>=1.2.0",
+    "torch-summary>=1.4.5",
+    "matplotlib>=3.7.1",
+    "encodec>=0.1.1",
+    "vocos>=0.0.2",
+    "transformers>=4.31.0",
+    "pesq>=0.0.4",
+    "alias-free-torch>=0.0.6",
+]
+
+[tool.pdm]
+[tool.pdm.build]
+includes = ["fish_vocoder"]
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "black>=22.12.0",
+    "pytest>=7.3.1",
+    "pre-commit>=3.3.3",
+    "ruff>=0.0.280",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+lint = { shell = "black . && ruff check --fix ." }
+check = { shell = "black --check . && ruff check ." }
+test = { shell = "PYTHONPATH=. pytest -n=auto -q tests" }
+
+[[tool.pdm.source]]
+type = "find_links"
+name = "torch-cu118"
+url = "https://download.pytorch.org/whl/cu118"
+verify_ssl = true
+
+[tool.isort]
+profile = "black"
+extend_skip = ["dataset", "logs"]
+
+[tool.ruff]
+line-length = 88
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    "W",
+    # isort
+    "I001"
+]

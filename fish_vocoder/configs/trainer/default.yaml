@@ -1,0 +1,23 @@
+_target_: lightning.pytorch.trainer.Trainer
+
+default_root_dir: ${paths.output_dir}
+max_steps: 10_000_000  # 5M steps
+
+accelerator: cuda
+devices: auto
+num_nodes: 1
+strategy: ddp_find_unused_parameters_true
+
+# 32-bit precision (tf32 on compatible GPUs)
+precision: "32"
+
+# disable validation by epoch end
+check_val_every_n_epoch: null
+val_check_interval: 5000
+
+# set True to to ensure deterministic results
+# makes training slower but gives more reproducibility than just setting seeds
+deterministic: False
+
+# Use torch.backends.cudnn.benchmark to speed up training
+benchmark: True

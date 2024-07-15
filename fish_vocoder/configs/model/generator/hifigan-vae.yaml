@@ -1,0 +1,19 @@
+_target_: torch.nn.ModuleDict
+modules:
+  encoder:
+    _target_: fish_vocoder.modules.encoders.hubert.HubertEncoder
+    model_name: "facebook/hubert-base-ls960"
+    freeze_backbone: true
+    output_size: 512
+  decoder:
+    _target_: fish_vocoder.modules.generators.hifigan.HiFiGANGenerator
+    hop_length: 640 # 2*320 at 16kHz, which is 40ms
+    upsample_rates: [8, 5, 4, 2, 2]  # aka. strides
+    upsample_kernel_sizes: [16, 10, 8, 4, 4]
+    resblock_kernel_sizes: [3, 7, 11]
+    resblock_dilation_sizes: [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+    num_mels: 512
+    upsample_initial_channel: 512
+    use_template: false
+    pre_conv_kernel_size: 7
+    post_conv_kernel_size: 7

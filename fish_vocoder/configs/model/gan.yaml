@@ -1,0 +1,57 @@
+defaults:
+  - resolution@_here_: "44100_512_2048"
+  - generator: hifigan
+  - spectrogram@mel_transforms.modules.input: mel
+  - spectrogram@mel_transforms.modules.loss: mel
+  - _self_
+
+_target_: fish_vocoder.models.gan.GANModel
+
+# While generator is running in large, we need to crop 32
+# frames for discriminator to save memory.
+num_frames: 128
+crop_length: "${eval: '${model.hop_length} * 32'}"
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 1
+  betas: [0.8, 0.99]
+  eps: 1e-6
+
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.LambdaLR
+  _partial_: true
+  lr_lambda:
+    _target_: fish_vocoder.schedulers.warmup_cosine.LambdaWarmUpCosineScheduler
+    val_base: 1e-4
+    val_final: 0
+    max_decay_steps: "${eval: ${trainer.max_steps} // 2}"
+
+mel_transforms:
+  _target_: torch.nn.ModuleDict
+  modules:
+    input: {}
+    loss: {}
+
+generator: {}
+
+discriminators:
+  _target_: torch.nn.ModuleDict
+  modules:
+    mpd:
+      _target_: fish_vocoder.modules.discriminators.mpd.MultiPeriodDiscriminator
+      periods: [3, 5, 7, 11, 17, 23, 37]
+
+    mrd:
+      _target_: fish_vocoder.modules.discriminators.mrd.MultiResolutionDiscriminator
+      resolutions:
+        - ["${model.n_fft}", "${model.hop_length}", "${model.win_length}"]
+        - [1024, 120, 600]
+        - [2048, 240, 1200]
+        - [4096, 480, 2400]
+        - [512, 50, 240]
+
+multi_resolution_stft_loss:
+  _target_: fish_vocoder.modules.losses.stft.MultiResolutionSTFTLoss
+  resolutions: ${model.discriminators.modules.mrd.resolutions}

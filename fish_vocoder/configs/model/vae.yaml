@@ -1,0 +1,7 @@
+defaults:
+  - gan
+  - override spectrogram@mel_transforms.modules.input: linear
+  - _self_
+
+_target_: fish_vocoder.models.vae.VAEModel
+latent_size: 256
